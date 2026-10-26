@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MCQ Practice</title>
+<meta name="theme-color" content="#2f5bea">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MCQ Quiz">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232f5bea'/><path d='M27 52l15 15 32-34' stroke='white' stroke-width='11' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+<style>
+  :root {
+    --bg: #f4f6fb; --card: #ffffff; --text: #171a26; --muted: #646b7d; --border: #e1e4ec;
+    --accent: #2f5bea; --accent-soft: #e8eeff; --on-solid: #ffffff;
+    --ok: #15803d; --ok-soft: #e6f6ec; --mid: #b45309; --mid-soft: #fdf3e2; --bad: #dc2626; --bad-soft: #fdeceb;
+    --radius: 14px; --shadow: 0 1px 2px rgba(16, 24, 40, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1016; --card: #171a23; --text: #e9ebf1; --muted: #9ba2b4; --border: #2a2f3d;
+      --accent: #7b96ff; --accent-soft: #1d2540; --on-solid: #0e1016;
+      --ok: #4ade80; --ok-soft: #0f2a1b; --mid: #fbbf24; --mid-soft: #2b2210; --bad: #f87171; --bad-soft: #2f1517;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
+  }
+  button { font: inherit; color: inherit; }
+  #app { max-width: 720px; margin: 0 auto; padding: 16px 16px calc(108px + env(safe-area-inset-bottom)); }
+
+  h1 { font-size: 1.4rem; line-height: 1.25; margin: 8px 0 4px; }
+  .sub { color: var(--muted); font-size: .9rem; margin: 0 0 8px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin: 12px 0; box-shadow: var(--shadow); }
+  .section-title {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    font-size: .76rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px;
+  }
+  .link-btn { background: none; border: 0; color: var(--accent); font-size: .82rem; font-weight: 600; padding: 4px 6px; cursor: pointer; letter-spacing: 0; text-transform: none; }
+  .muted { color: var(--muted); }
+  .small { font-size: .85rem; }
+  .center { text-align: center; }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+  .stat b { display: block; font-size: 1.35rem; line-height: 1.3; }
+  .stat span { font-size: .75rem; color: var(--muted); }
+
+  .seg { display: flex; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 3px; gap: 3px; }
+  .seg-btn { flex: 1; min-width: 0; border: 0; background: none; font-size: .9rem; padding: 9px 4px; border-radius: 9px; cursor: pointer; line-height: 1.25; }
+  .seg-btn.on { background: var(--card); color: var(--accent); font-weight: 650; box-shadow: 0 1px 3px rgba(0, 0, 0, .14); }
+  .seg-btn:disabled { opacity: .4; cursor: default; }
+  .seg-btn small { display: block; font-size: .72rem; opacity: .75; font-weight: 500; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    border: 1px solid var(--border); background: var(--card); color: var(--muted);
+    font-size: .86rem; padding: 7px 12px; border-radius: 999px; cursor: pointer; text-align: left; line-height: 1.3;
+  }
+  .chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+  .chip-n { font-size: .74rem; opacity: .7; margin-left: 6px; }
+
+  .switch-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; cursor: pointer; }
+  .switch { appearance: none; -webkit-appearance: none; flex: none; width: 46px; height: 28px; border-radius: 99px; background: var(--border); position: relative; cursor: pointer; transition: background .2s; margin: 0; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0, 0, 0, .3); }
+  .switch:checked { background: var(--accent); }
+  .switch:checked::after { transform: translateX(18px); }
+
+  .bar-fixed {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+    background: var(--card); border-top: 1px solid var(--border);
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  }
+  .bar-inner { max-width: 688px; margin: 0 auto; display: flex; gap: 10px; }
+  .btn { flex: 1; border: 0; border-radius: 12px; padding: 14px 16px; font-weight: 650; cursor: pointer; background: var(--accent); color: var(--on-solid); }
+  .btn.secondary { background: var(--accent-soft); color: var(--accent); }
+  .btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn.narrow { flex: 0 0 auto; padding-left: 20px; padding-right: 20px; }
+  .btn:disabled { opacity: .45; cursor: default; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .btn-row .btn { min-width: 140px; }
+
+  .resume { display: flex; align-items: center; gap: 12px; border-color: var(--accent); background: var(--accent-soft); }
+  .resume > div { flex: 1; min-width: 0; }
+  .resume .btn { flex: none; padding: 10px 16px; }
+
+  .footer { margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; }
+
+  /* quiz */
+  .qhead { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .icon-btn { width: 40px; height: 40px; flex: none; border-radius: 12px; border: 1px solid var(--border); background: var(--card); font-size: 1.05rem; cursor: pointer; }
+  .qcount { flex: 1; font-weight: 650; }
+  .score { font-size: .92rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .score .r { color: var(--ok); font-weight: 650; }
+  .score .w { color: var(--bad); font-weight: 650; margin-left: 8px; }
+  .progress { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 18px; }
+  .progress > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .25s; }
+
+  .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .tag { font-size: .74rem; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .tag.plain { background: transparent; border: 1px solid var(--border); color: var(--muted); font-weight: 500; }
+  .tag.d-easy { background: var(--ok-soft); color: var(--ok); }
+  .tag.d-medium { background: var(--mid-soft); color: var(--mid); }
+  .tag.d-hard { background: var(--bad-soft); color: var(--bad); }
+
+  .qtext { font-size: 1.12rem; font-weight: 600; line-height: 1.45; margin: 4px 0 18px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .opts { display: flex; flex-direction: column; gap: 10px; }
+  .opt {
+    display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left;
+    border: 1.5px solid var(--border); background: var(--card); padding: 13px 14px; border-radius: var(--radius);
+    cursor: pointer; transition: border-color .15s, background .15s; box-shadow: var(--shadow);
+  }
+  @media (hover: hover) { .opt:not(:disabled):not(.static):hover { border-color: var(--accent); } }
+  .opt:disabled, .opt.static { cursor: default; opacity: 1; color: var(--text); }
+  .opt-label {
+    flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+    font-size: .85rem; font-weight: 700; background: var(--bg); border: 1px solid var(--border);
+  }
+  .opt-text { flex: 1; min-width: 0; padding-top: 2px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .opt-icon { flex: none; font-weight: 800; padding-top: 2px; }
+  .opt.correct { border-color: var(--ok); background: var(--ok-soft); }
+  .opt.correct .opt-label { background: var(--ok); border-color: var(--ok); color: var(--on-solid); }
+  .opt.correct .opt-icon { color: var(--ok); }
+  .opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+  .opt.wrong .opt-label { background: var(--bad); border-color: var(--bad); color: var(--on-solid); }
+  .opt.wrong .opt-icon { color: var(--bad); }
+  .opt.dim { opacity: .55; }
+
+  .feedback { margin-top: 16px; padding: 14px 16px; border-radius: var(--radius); border-left: 4px solid; animation: pop .2s ease-out; }
+  .feedback.ok { background: var(--ok-soft); border-color: var(--ok); }
+  .feedback.bad { background: var(--bad-soft); border-color: var(--bad); }
+  .fb-title { font-weight: 750; font-size: 1.05rem; }
+  .feedback.ok .fb-title { color: var(--ok); }
+  .feedback.bad .fb-title { color: var(--bad); }
+  .fb-answer { margin-top: 4px; overflow-wrap: anywhere; }
+  .fb-expl { margin-top: 8px; font-size: .95rem; overflow-wrap: anywhere; }
+  .fb-expl b { font-weight: 650; }
+  @keyframes pop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .keys-hint { display: none; margin-top: 18px; text-align: center; font-size: .8rem; color: var(--muted); }
+  @media (hover: hover) and (pointer: fine) { .keys-hint { display: block; } }
+
+  /* results */
+  .score-big { text-align: center; padding: 22px 16px; }
+  .score-big .pct { font-size: 3rem; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+  .score-big .verdict { font-weight: 650; margin-top: 8px; }
+  .stack { display: flex; height: 10px; border-radius: 99px; overflow: hidden; background: var(--border); margin: 16px 0 12px; }
+  .stack i.r { background: var(--ok); }
+  .stack i.w { background: var(--bad); }
+  .trow { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--border); font-size: .9rem; }
+  .section-title + .trow { border-top: 0; padding-top: 0; }
+  .trow .n { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .tbar { grid-column: 1 / -1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .tbar i { display: block; height: 100%; }
+  .review-item .qtext { font-size: 1rem; margin-bottom: 12px; }
+  .review-item .opts { gap: 8px; }
+  .review-item .opt { padding: 9px 12px; font-size: .93rem; box-shadow: none; }
+  .review-item .opt-label { width: 24px; height: 24px; font-size: .78rem; }
+  .yours { flex: none; font-size: .72rem; font-weight: 700; padding-top: 4px; }
+  .empty { text-align: center; color: var(--muted); padding: 24px 0; }
+  .spinner { width: 34px; height: 34px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; margin: 30vh auto 16px; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  pre.err { white-space: pre-wrap; overflow-wrap: anywhere; background: var(--bad-soft); color: var(--bad); padding: 10px 12px; border-radius: 10px; font-size: .85rem; }
+
+  /* sync */
+  .field { display: block; margin-top: 12px; }
+  .field > span { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 4px; }
+  .input { display: block; width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font: inherit; }
+  .input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  textarea.input { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; resize: vertical; overflow-wrap: anywhere; }
+  .steps { padding-left: 20px; margin: 10px 0 4px; }
+  .steps li { margin: 6px 0; }
+  .steps a { color: var(--accent); font-weight: 600; }
+  .msg-err { color: var(--bad); font-size: .9rem; margin: 10px 0 0; }
+  .msg-err:empty { display: none; }
+  .switch-row small { display: block; font-size: .78rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main id="app"><div class="spinner"></div><p class="center muted">Loading questions…</p></main>
+<input type="file" id="file-input" accept=".json,application/json" hidden>
+<script src="sync.js"></script>
+<script>
+(() => {
+  'use strict';
+
+  // Questions file. Override with ?data=other.json to keep several banks side by side.
+  const DATA_URL = new URLSearchParams(location.search).get('data') || 'questions.json';
+  const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const DIFF_ORDER = ['easy', 'medium', 'hard'];
+  const COUNTS = [10, 25, 50, 100, 0]; // 0 = all
+  const app = document.getElementById('app');
+  const fileInput = document.getElementById('file-input');
+
+  // ---------- storage (never throws: private mode, blocked storage, quota) ----------
+  const store = {
+    get(k, fallback) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : fallback; } catch { return fallback; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* ignore */ } },
+    del(k) { try { localStorage.removeItem(k); } catch { /* ignore */ } },
+  };
+
+  // Unlocked sync secret {token, gist}: localStorage when "remember" is on, otherwise sessionStorage (gone when the tab closes).
+  const SECRET_KEY = 'mcq.sync.secret';
+  const secretStore = {
+    get() { for (const s of ['localStorage', 'sessionStorage']) { try { const v = JSON.parse(window[s].getItem(SECRET_KEY)); if (v && v.token && v.gist) return v; } catch { /* ignore */ } } return null; },
+    set(secret, remember) { this.clear(); try { (remember ? localStorage : sessionStorage).setItem(SECRET_KEY, JSON.stringify(secret)); } catch { /* ignore */ } },
+    clear() { for (const s of ['localStorage', 'sessionStorage']) { try { window[s].removeItem(SECRET_KEY); } catch { /* ignore */ } } },
+    remembered() { try { return !!localStorage.getItem(SECRET_KEY); } catch { return false; } },
+  };
+
+  let bank = null;   // loaded question bank
+  let quiz = null;   // current quiz session
+  let view = 'loading';
+  let reviewFilter = 'wrong';
+  let stats = store.get('mcq.stats', {}); // question key -> {c, w, last: 'R' | 'W', t: answered at (ms)}
+  let prefs = Object.assign(
+    { exTopics: [], exDiffs: [], pool: 'all', count: 25, shuffle: true },
+    store.get('mcq.prefs', {})
+  );
+
+  const savePrefs = () => store.set('mcq.prefs', prefs);
+  const saveStats = () => { store.set('mcq.stats', stats); schedulePush(); };
+  function saveQuiz() {
+    if (quiz && !quiz.finished) store.set('mcq.session', quiz); else store.del('mcq.session');
+    store.set('mcq.sessionT', Date.now()); // newest session (or its removal) wins when devices sync
+    schedulePush();
+  }
+
+  // ---------- helpers ----------
+  function h(tag, props, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props || {})) {
+      if (v == null || v === false) continue;
+      if (k === 'class') el.className = v;
+      else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : v);
+    }
+    // Strings become text nodes, so question text can never inject HTML.
+    for (const kid of kids.flat(Infinity)) if (kid != null && kid !== false) el.append(kid);
+    return el;
+  }
+  const str = (v) => (v == null ? '' : String(v).trim());
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  function hash(s) { let x = 5381; for (let i = 0; i < s.length; i++) x = ((x * 33) ^ s.charCodeAt(i)) >>> 0; return x.toString(36); }
+  function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function show(node, keepScroll) { const y = window.scrollY; app.replaceChildren(node); window.scrollTo(0, keepScroll ? y : 0); }
+  const diffClass = (d) => (DIFF_ORDER.includes(d.toLowerCase()) ? 'tag d-' + d.toLowerCase() : 'tag plain');
+  const optText = (q, label) => (q.options.find((o) => o.label === label) || {}).text || '';
+
+  // ---------- loading & normalising ----------
+  // Accepts { questions: [...] } or a bare array. Options may be an object {A: "..", B: ".."} or an array.
+  // Answer may be the option letter, the option text, or a 0-based index.
+  function normalize(raw) {
+    const list = Array.isArray(raw) ? raw : (raw && (raw.questions || raw.mcqs || raw.items)) || [];
+    const out = [];
+    const seen = new Set();
+    let skipped = 0;
+    list.forEach((q, i) => {
+      const n = normalizeOne(q, i);
+      if (!n) { skipped++; return; }
+      let key = n.key;
+      for (let j = 2; seen.has(key); j++) key = n.key + '~' + j;
+      n.key = key;
+      seen.add(key);
+      out.push(n);
+    });
+    return { questions: out, skipped };
+  }
+
+  function normalizeOne(q, i) {
+    if (!q || typeof q !== 'object') return null;
+    const text = str(q.question ?? q.q ?? q.text);
+    if (!text) return null;
+    const rawOpts = q.options ?? q.choices;
+    let options = [];
+    if (Array.isArray(rawOpts)) options = rawOpts.map((t, j) => ({ label: LETTERS[j], text: str(t) }));
+    else if (rawOpts && typeof rawOpts === 'object') options = Object.entries(rawOpts).map(([k, v]) => ({ label: str(k), text: str(v) }));
+    options = options.filter((o) => o.label && o.text);
+    if (options.length < 2) return null;
+    const answer = resolveAnswer(q.answer ?? q.correct ?? q.correct_answer, options) || resolveAnswer(q.answer_text, options);
+    if (!answer) return null;
+    const id = str(q.id) || 'Q' + (i + 1);
+    return {
+      key: id + '#' + hash(text),
+      id,
+      question: text,
+      options,
+      answer,
+      topic: str(q.topic) || 'General',
+      subtopic: str(q.subtopic),
+      difficulty: str(q.difficulty),
+      explanation: str(q.explanation ?? q.explain ?? q.reason),
+    };
+  }
+
+  function resolveAnswer(a, options) {
+    if (a == null || a === '') return null;
+    if (typeof a === 'number') return options[a] ? options[a].label : null;
+    const s = String(a).trim().toLowerCase();
+    const hit = options.find((o) => o.label.toLowerCase() === s) || options.find((o) => o.text.toLowerCase() === s);
+    return hit ? hit.label : null;
+  }
+
+  function setBank(raw, source) {
+    const { questions, skipped } = normalize(raw);
+    if (!questions.length) throw new Error('No valid questions found in ' + source + '. Check the JSON format described in README.md.');
+    const rank = (d) => { const r = DIFF_ORDER.indexOf(d.toLowerCase()); return r < 0 ? 99 : r; };
+    const meta = Array.isArray(raw) ? {} : raw;
+    bank = {
+      title: str(meta.title) || 'MCQ Practice',
+      subtitle: str(meta.syllabus || meta.description || meta.subtitle),
+      source,
+      questions,
+      skipped,
+      topics: [...new Set(questions.map((q) => q.topic))],
+      diffs: [...new Set(questions.map((q) => q.difficulty).filter(Boolean))].sort((a, b) => rank(a) - rank(b)),
+      byKey: Object.fromEntries(questions.map((q) => [q.key, q])),
+    };
+    document.title = bank.title;
+    quiz = loadSavedQuiz();
+    renderHome();
+  }
+
+  async function load() {
+    try {
+      // no-cache: revalidate so a replaced questions.json shows up right away
+      const res = await fetch(DATA_URL, { cache: 'no-cache' });
+      if (!res.ok) throw new Error('HTTP ' + res.status + ' while loading "' + DATA_URL + '"');
+      const raw = await res.json();
+      await syncReady; // so the first screen already shows the right sync state
+      setBank(raw, DATA_URL);
+      runSync();
+    } catch (err) {
+      renderError(err);
+    }
+  }
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files && fileInput.files[0];
+    fileInput.value = '';
+    if (!file) return;
+    file.text().then((t) => setBank(JSON.parse(t), file.name)).catch((err) => renderError(err, file.name));
+  });
+
+  // ---------- session ----------
+  function loadSavedQuiz() {
+    const s = store.get('mcq.session', null);
+    if (!s || !Array.isArray(s.keys)) return null;
+    const keys = s.keys.filter((k) => bank.byKey[k]);
+    if (!keys.length) return null;
+    return { keys, answers: s.answers || {}, pos: Math.max(0, Math.min(s.pos || 0, keys.length - 1)), label: s.label || 'Quiz' };
+  }
+
+  function matches(q, ignore) {
+    if (ignore !== 'topic' && prefs.exTopics.includes(q.topic)) return false;
+    if (ignore !== 'diff' && q.difficulty && prefs.exDiffs.includes(q.difficulty)) return false;
+    if (ignore !== 'pool') {
+      const s = stats[q.key];
+      if (prefs.pool === 'new' && s) return false;
+      if (prefs.pool === 'wrong' && !(s && s.last === 'W')) return false;
+    }
+    return true;
+  }
+
+  function startQuiz(list, label) {
+    const qs = prefs.shuffle ? shuffle(list.slice()) : list.slice();
+    quiz = { keys: qs.map((q) => q.key), answers: {}, pos: 0, label };
+    saveQuiz();
+    enterScreen();
+    renderQuiz();
+  }
+
+  const current = () => bank.byKey[quiz.keys[quiz.pos]];
+
+  function tally() {
+    let r = 0, w = 0;
+    for (const k of quiz.keys) {
+      const a = quiz.answers[k];
+      if (a == null) continue;
+      if (a === bank.byKey[k].answer) r++; else w++;
+    }
+    return { r, w, done: r + w };
+  }
+
+  function choose(label) {
+    const q = current();
+    if (quiz.answers[q.key] != null) return;
+    quiz.answers[q.key] = label;
+    const ok = label === q.answer;
+    const s = stats[q.key] || { c: 0, w: 0 };
+    if (ok) s.c++; else s.w++;
+    s.last = ok ? 'R' : 'W';
+    s.t = Date.now();
+    stats[q.key] = s;
+    saveStats();
+    saveQuiz();
+    renderQuiz(true);
+    const fb = app.querySelector('.feedback');
+    if (fb) {
+      const r = fb.getBoundingClientRect();
+      const bar = document.querySelector('.bar-fixed');
+      const limit = window.innerHeight - (bar ? bar.offsetHeight : 0);
+      if (r.bottom > limit) window.scrollBy({ top: r.bottom - limit + 12, behavior: 'smooth' });
+    }
+  }
+
+  function go(delta) {
+    const next = quiz.pos + delta;
+    if (next < 0) return;
+    if (next >= quiz.keys.length) return finish();
+    quiz.pos = next;
+    saveQuiz();
+    renderQuiz();
+  }
+
+  function finish() {
+    const left = quiz.keys.length - tally().done;
+    if (left > 0 && !confirm(left + ' question' + (left > 1 ? 's are' : ' is') + ' unanswered. Finish anyway?')) return;
+    quiz.finished = true;
+    saveQuiz();
+    reviewFilter = tally().w ? 'wrong' : left ? 'skipped' : 'all';
+    renderResults();
+  }
+
+  // Phone back button: quiz/results -> home instead of leaving the site.
+  let pushed = false;
+  function enterScreen() { if (!pushed) { history.pushState({ mcq: 1 }, ''); pushed = true; } }
+  function goHome() { if (pushed) history.back(); else renderHome(); }
+  window.addEventListener('popstate', () => { pushed = false; if (bank) renderHome(); });
+
+  // ---------- views ----------
+  function renderError(err, source) {
+    view = 'error';
+    const isFile = location.protocol === 'file:';
+    show(h('div', {},
+      h('h1', {}, 'Could not load questions'),
+      h('p', { class: 'sub' }, 'Tried: ' + (source || DATA_URL)),
+      h('pre', { class: 'err' }, String(err && err.message ? err.message : err)),
+      h('div', { class: 'card small' },
+        isFile
+          ? 'You opened index.html directly from disk. Browsers block loading the JSON that way. Use the deployed site, run a local server (see README.md), or pick the JSON file below.'
+          : 'Check that questions.json sits next to index.html and is valid JSON (paste it into jsonlint.com to find errors). You can also pick a JSON file from this device.'),
+      h('div', { class: 'btn-row' },
+        h('button', { class: 'btn', onclick: () => fileInput.click() }, 'Choose JSON file'),
+        !isFile && h('button', { class: 'btn ghost', onclick: () => location.reload() }, 'Retry'))
+    ));
+  }
+
+  function renderHome(keepScroll) {
+    view = 'home';
+    const qs = bank.questions;
+    const pool = qs.filter((q) => matches(q));
+    const take = prefs.count ? Math.min(prefs.count, pool.length) : pool.length;
+    const attempted = qs.filter((q) => stats[q.key]);
+    const right = attempted.reduce((a, q) => a + stats[q.key].c, 0);
+    const wrongTotal = attempted.reduce((a, q) => a + stats[q.key].w, 0);
+    const mistakes = qs.filter((q) => stats[q.key] && stats[q.key].last === 'W').length;
+
+    const basePool = qs.filter((q) => matches(q, 'pool'));
+    const poolCounts = {
+      all: basePool.length,
+      new: basePool.filter((q) => !stats[q.key]).length,
+      wrong: basePool.filter((q) => stats[q.key] && stats[q.key].last === 'W').length,
+    };
+    const topicCount = {};
+    for (const q of qs) if (matches(q, 'topic')) topicCount[q.topic] = (topicCount[q.topic] || 0) + 1;
+    const diffCount = {};
+    for (const q of qs) if (q.difficulty && matches(q, 'diff')) diffCount[q.difficulty] = (diffCount[q.difficulty] || 0) + 1;
+
+    const update = (fn) => { fn(); savePrefs(); renderHome(true); };
+    const toggleIn = (arr, v) => (arr.includes(v) ? arr.filter((x) => x !== v) : arr.concat(v));
+
+    const inQuiz = quiz && !quiz.finished;
+    const label = (() => {
+      const on = bank.topics.filter((t) => !prefs.exTopics.includes(t));
+      const base = on.length === 1 ? on[0] : on.length === bank.topics.length ? 'All topics' : on.length + ' topics';
+      return prefs.pool === 'wrong' ? 'Mistakes · ' + base : prefs.pool === 'new' ? 'New · ' + base : base;
+    })();
+
+    show(h('div', {},
+      h('h1', {}, bank.title),
+      h('p', { class: 'sub' },
+        bank.subtitle ? bank.subtitle + ' · ' : '',
+        qs.length + ' questions · ' + bank.topics.length + ' topic' + (bank.topics.length > 1 ? 's' : ''),
+        bank.skipped ? ' · ' + bank.skipped + ' invalid entr' + (bank.skipped > 1 ? 'ies' : 'y') + ' skipped' : ''),
+
+      inQuiz && h('div', { class: 'card resume' },
+        h('div', {},
+          h('div', { style: 'font-weight:650' }, 'Continue: ' + quiz.label),
+          h('div', { class: 'small muted' }, tally().done + ' of ' + quiz.keys.length + ' answered')),
+        h('button', { class: 'link-btn', onclick: () => { quiz = null; saveQuiz(); renderHome(true); } }, 'Discard'),
+        h('button', { class: 'btn', onclick: () => { enterScreen(); renderQuiz(); } }, 'Resume')),
+
+      h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'Your progress',
+          canSync && h('button', { class: 'link-btn', id: 'sync-status', onclick: () => { enterScreen(); renderSync(); } }, syncLabel())),
+        h('div', { class: 'stats' },
+          h('div', { class: 'stat' }, h('b', {}, attempted.length + ' / ' + qs.length), h('span', {}, 'Attempted')),
+          h('div', { class: 'stat' }, h('b', {}, right + wrongTotal ? pct(right, right + wrongTotal) + '%' : '–'), h('span', {}, 'Accuracy')),
+          h('div', { class: 'stat' }, h('b', { style: mistakes ? 'color:var(--bad)' : '' }, mistakes), h('span', {}, 'To revisit')))),
+
+      h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'Questions'),
+        h('div', { class: 'seg' },
+          [['all', 'All'], ['new', 'Unattempted'], ['wrong', 'Mistakes']].map(([v, t]) =>
+            h('button', {
+              class: 'seg-btn' + (prefs.pool === v ? ' on' : ''), 'aria-pressed': String(prefs.pool === v),
+              onclick: () => update(() => { prefs.pool = v; }),
+            }, t, h('small', {}, poolCounts[v]))))),
+
+      h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'Topics',
+          h('span', {},
+            h('button', { class: 'link-btn', onclick: () => update(() => { prefs.exTopics = []; }) }, 'All'),
+            h('button', { class: 'link-btn', onclick: () => update(() => { prefs.exTopics = bank.topics.slice(); }) }, 'None'))),
+        h('div', { class: 'chips' },
+          bank.topics.map((t) => {
+            const on = !prefs.exTopics.includes(t);
+            return h('button', { class: 'chip' + (on ? ' on' : ''), 'aria-pressed': String(on), onclick: () => update(() => { prefs.exTopics = toggleIn(prefs.exTopics, t); }) },
+              t, h('span', { class: 'chip-n' }, topicCount[t] || 0));
+          }))),
+
+      bank.diffs.length > 0 && h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'Difficulty'),
+        h('div', { class: 'chips' },
+          bank.diffs.map((d) => {
+            const on = !prefs.exDiffs.includes(d);
+            return h('button', { class: 'chip' + (on ? ' on' : ''), 'aria-pressed': String(on), onclick: () => update(() => { prefs.exDiffs = toggleIn(prefs.exDiffs, d); }) },
+              d, h('span', { class: 'chip-n' }, diffCount[d] || 0));
+          }))),
+
+      h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'How many'),
+        h('div', { class: 'seg' },
+          COUNTS.map((c) =>
+            h('button', {
+              class: 'seg-btn' + (prefs.count === c ? ' on' : ''), 'aria-pressed': String(prefs.count === c),
+              onclick: () => update(() => { prefs.count = c; }),
+            }, c || 'All'))),
+        h('label', { class: 'switch-row' },
+          h('span', {}, 'Shuffle question order'),
+          h('input', { type: 'checkbox', class: 'switch', checked: prefs.shuffle, onchange: (e) => update(() => { prefs.shuffle = e.target.checked; }) }))),
+
+      h('div', { class: 'footer small' },
+        h('span', { class: 'muted' }, 'Source: ' + bank.source),
+        h('button', { class: 'link-btn', onclick: () => fileInput.click() }, 'Open another JSON file'),
+        h('button', {
+          class: 'link-btn', style: 'color:var(--bad)',
+          onclick: () => {
+            if (!confirm('Erase all saved progress and mistakes on ' + (sync.conf ? 'every synced device?' : 'this device?'))) return;
+            store.set('mcq.resetAt', Date.now()); // other devices drop answers older than this when they sync
+            stats = {}; saveStats(); quiz = null; saveQuiz(); renderHome(true);
+          },
+        }, 'Reset progress')),
+
+      h('div', { class: 'bar-fixed' }, h('div', { class: 'bar-inner' },
+        h('button', {
+          class: 'btn', disabled: take === 0,
+          onclick: () => {
+            const list = (prefs.shuffle ? shuffle(pool.slice()) : pool).slice(0, take);
+            startQuiz(list, label);
+          },
+        }, take ? 'Start · ' + take + ' question' + (take > 1 ? 's' : '') : 'No questions match')))
+    ), keepScroll);
+  }
+
+  function renderQuiz(keepScroll) {
+    view = 'quiz';
+    const q = current();
+    const n = quiz.keys.length;
+    const chosen = quiz.answers[q.key];
+    const done = chosen != null;
+    const ok = chosen === q.answer;
+    const t = tally();
+    const last = quiz.pos === n - 1;
+
+    show(h('div', {},
+      h('div', { class: 'qhead' },
+        h('button', { class: 'icon-btn', 'aria-label': 'Back to menu', title: 'Back to menu (progress is saved)', onclick: goHome }, '✕'),
+        h('div', { class: 'qcount' }, 'Question ' + (quiz.pos + 1) + ' of ' + n),
+        h('div', { class: 'score' }, h('span', { class: 'r' }, '✓ ' + t.r), h('span', { class: 'w' }, '✗ ' + t.w))),
+      h('div', { class: 'progress' }, h('i', { style: 'width:' + pct(t.done, n) + '%' })),
+
+      h('div', { class: 'meta' },
+        h('span', { class: 'tag' }, q.topic),
+        q.subtopic && h('span', { class: 'tag plain' }, q.subtopic),
+        q.difficulty && h('span', { class: diffClass(q.difficulty) }, q.difficulty),
+        h('span', { class: 'tag plain' }, q.id)),
+      h('div', { class: 'qtext' }, q.question),
+
+      h('div', { class: 'opts' }, q.options.map((o) => {
+        let cls = 'opt';
+        if (done) cls += o.label === q.answer ? ' correct' : o.label === chosen ? ' wrong' : ' dim';
+        return h('button', { class: cls, disabled: done, onclick: () => choose(o.label) },
+          h('span', { class: 'opt-label' }, o.label),
+          h('span', { class: 'opt-text' }, o.text),
+          done && o.label === q.answer && h('span', { class: 'opt-icon' }, '✓'),
+          done && o.label === chosen && !ok && h('span', { class: 'opt-icon' }, '✗'));
+      })),
+
+      done && h('div', { class: 'feedback ' + (ok ? 'ok' : 'bad'), role: 'status' },
+        h('div', { class: 'fb-title' }, ok ? '✓ Correct!' : '✗ Wrong'),
+        !ok && h('div', { class: 'fb-answer' }, 'Correct answer: ', h('b', {}, q.answer + '. ' + optText(q, q.answer))),
+        q.explanation && h('div', { class: 'fb-expl' }, h('b', {}, 'Explanation: '), q.explanation)),
+
+      h('div', { class: 'keys-hint' }, 'Keyboard: A–' + q.options[q.options.length - 1].label + ' or 1–' + q.options.length + ' to answer · Enter / → next · ← previous'),
+
+      h('div', { class: 'bar-fixed' }, h('div', { class: 'bar-inner' },
+        h('button', { class: 'btn ghost narrow', disabled: quiz.pos === 0, onclick: () => go(-1), 'aria-label': 'Previous question' }, '‹ Prev'),
+        h('button', { class: 'btn' + (done ? '' : ' secondary'), onclick: () => go(1) },
+          last ? 'Finish' : done ? 'Next ›' : 'Skip ›')))
+    ), keepScroll);
+  }
+
+  function renderResults(keepScroll) {
+    view = 'results';
+    const qs = quiz.keys.map((k) => bank.byKey[k]);
+    const ans = quiz.answers;
+    const right = qs.filter((q) => ans[q.key] === q.answer);
+    const wrong = qs.filter((q) => ans[q.key] != null && ans[q.key] !== q.answer);
+    const skipped = qs.filter((q) => ans[q.key] == null);
+    const p = pct(right.length, qs.length);
+    const verdict = p >= 80 ? 'Excellent!' : p >= 60 ? 'Good work — keep going.' : p >= 40 ? 'Getting there. Review the misses below.' : 'Keep practising — review the explanations below.';
+
+    const byTopic = {};
+    for (const q of qs) {
+      const b = (byTopic[q.topic] = byTopic[q.topic] || { r: 0, n: 0 });
+      b.n++;
+      if (ans[q.key] === q.answer) b.r++;
+    }
+    const topicRows = Object.entries(byTopic).sort((a, b) => a[1].r / a[1].n - b[1].r / b[1].n);
+    const barColor = (x) => (x >= 70 ? 'var(--ok)' : x >= 40 ? 'var(--mid)' : 'var(--bad)');
+
+    const lists = { wrong, skipped, all: qs };
+    const shown = lists[reviewFilter];
+    const retry = wrong.concat(skipped);
+
+    show(h('div', {},
+      h('div', { class: 'qhead' },
+        h('button', { class: 'icon-btn', 'aria-label': 'Back to menu', onclick: goHome }, '✕'),
+        h('div', { class: 'qcount' }, 'Results · ' + quiz.label)),
+
+      h('div', { class: 'card score-big' },
+        h('div', { class: 'pct', style: 'color:' + barColor(p) }, p + '%'),
+        h('div', { class: 'muted' }, right.length + ' of ' + qs.length + ' correct'),
+        h('div', { class: 'verdict' }, verdict),
+        h('div', { class: 'stack' },
+          h('i', { class: 'r', style: 'width:' + (right.length / qs.length) * 100 + '%' }),
+          h('i', { class: 'w', style: 'width:' + (wrong.length / qs.length) * 100 + '%' })),
+        h('div', { class: 'stats' },
+          h('div', { class: 'stat' }, h('b', { style: 'color:var(--ok)' }, right.length), h('span', {}, 'Correct')),
+          h('div', { class: 'stat' }, h('b', { style: 'color:var(--bad)' }, wrong.length), h('span', {}, 'Wrong')),
+          h('div', { class: 'stat' }, h('b', {}, skipped.length), h('span', {}, 'Skipped'))),
+        h('div', { class: 'btn-row' },
+          retry.length > 0 && h('button', { class: 'btn', onclick: () => startQuiz(retry, 'Retry · ' + quiz.label.replace(/^Retry · /, '')) }, 'Retry ' + retry.length + ' missed'),
+          h('button', { class: 'btn ' + (retry.length ? 'ghost' : ''), onclick: goHome }, 'New quiz'))),
+
+      topicRows.length > 1 && h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'By topic (weakest first)'),
+        topicRows.map(([t, b]) => {
+          const x = pct(b.r, b.n);
+          return h('div', { class: 'trow' },
+            h('span', {}, t), h('span', { class: 'n' }, b.r + '/' + b.n),
+            h('div', { class: 'tbar' }, h('i', { style: 'width:' + x + '%;background:' + barColor(x) })));
+        })),
+
+      h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'Review answers'),
+        h('div', { class: 'seg' },
+          [['wrong', 'Wrong'], ['skipped', 'Skipped'], ['all', 'All']].map(([v, t]) =>
+            h('button', {
+              class: 'seg-btn' + (reviewFilter === v ? ' on' : ''), 'aria-pressed': String(reviewFilter === v),
+              onclick: () => { reviewFilter = v; renderResults(true); },
+            }, t + ' (' + lists[v].length + ')')))),
+
+      shown.length === 0
+        ? h('div', { class: 'empty' }, reviewFilter === 'wrong' ? 'No wrong answers. 🎉' : 'Nothing here.')
+        : shown.map((q) => reviewCard(q, ans[q.key], qs.indexOf(q) + 1))
+    ), keepScroll);
+  }
+
+  function reviewCard(q, chosen, num) {
+    return h('div', { class: 'card review-item' },
+      h('div', { class: 'meta' },
+        h('span', { class: 'tag plain' }, '#' + num),
+        h('span', { class: 'tag' }, q.topic),
+        q.difficulty && h('span', { class: diffClass(q.difficulty) }, q.difficulty),
+        h('span', { class: 'tag plain' }, q.id)),
+      h('div', { class: 'qtext' }, q.question),
+      h('div', { class: 'opts' }, q.options.map((o) => {
+        const isAns = o.label === q.answer;
+        const isMine = o.label === chosen;
+        const cls = 'opt static' + (isAns ? ' correct' : isMine ? ' wrong' : ' dim');
+        return h('div', { class: cls },
+          h('span', { class: 'opt-label' }, o.label),
+          h('span', { class: 'opt-text' }, o.text),
+          isMine && h('span', { class: 'yours', style: 'color:' + (isAns ? 'var(--ok)' : 'var(--bad)') }, 'YOUR ANSWER'));
+      })),
+      chosen == null && h('div', { class: 'small muted', style: 'margin-top:8px' }, 'Skipped'),
+      q.explanation && h('div', { class: 'fb-expl' }, h('b', {}, 'Explanation: '), q.explanation));
+  }
+
+  // ---------- sync across devices (logic in sync.js, setup in README.md) ----------
+  const canSync = !!(window.MCQSync && window.crypto && crypto.subtle); // WebCrypto needs https
+  const sync = {
+    conf: null,                 // sync.json: passphrase-encrypted {token, gist}
+    published: false,           // conf came from the site, not just this device's setup
+    secret: secretStore.get(),  // decrypted {token, gist} while unlocked here
+    busy: false, again: false, timer: 0,
+    at: store.get('mcq.sync.at', 0),
+    error: null,
+    showSetup: false,
+  };
+
+  async function loadSyncConf() {
+    if (!canSync) return;
+    let site = null;
+    try {
+      const res = await fetch('sync.json', { cache: 'no-cache' });
+      if (res.ok) site = await res.json();
+    } catch { /* offline, or sync not set up */ }
+    const valid = (c) => !!(c && c.ct && c.v >= 2); // v1 left the gist id readable
+    if (!valid(site)) site = null;
+    // The device that ran setup keeps its own copy until sync.json is published; the newer one wins.
+    let mine = store.get('mcq.sync.conf', null);
+    if (!valid(mine)) mine = null;
+    sync.conf = mine && (!site || (mine.created || 0) > (site.created || 0)) ? mine : site;
+    sync.published = !!site && sync.conf.ct === site.ct;
+  }
+
+  function localDoc() {
+    return { v: 1, resetAt: store.get('mcq.resetAt', 0), stats, session: store.get('mcq.session', null), sessionT: store.get('mcq.sessionT', 0) };
+  }
+
+  function applyDoc(doc) {
+    const d = MCQSync.merge(localDoc(), doc); // keeps anything answered while the upload was in flight
+    const sessionChanged = d.sessionT !== store.get('mcq.sessionT', 0);
+    const changed = sessionChanged || JSON.stringify(d.stats) !== JSON.stringify(stats);
+    stats = d.stats;
+    store.set('mcq.stats', stats);
+    store.set('mcq.resetAt', d.resetAt);
+    if (sessionChanged) {
+      if (d.session) store.set('mcq.session', d.session); else store.del('mcq.session');
+      store.set('mcq.sessionT', d.sessionT);
+      if (bank) quiz = loadSavedQuiz();
+    }
+    if (!changed || !bank) return;
+    if (view === 'home') renderHome(true);
+    else if (sessionChanged && (view === 'quiz' || view === 'results')) renderHome(); // continued or finished on another device
+  }
+
+  async function runSync() {
+    clearTimeout(sync.timer);
+    sync.timer = 0;
+    if (!canSync || !sync.secret || !sync.conf) return;
+    if (sync.busy) { sync.again = true; return; }
+    sync.busy = true;
+    showSyncStatus();
+    try {
+      applyDoc(await MCQSync.client(sync.secret.token).sync(sync.secret.gist, localDoc));
+      sync.at = Date.now();
+      store.set('mcq.sync.at', sync.at);
+      sync.error = null;
+    } catch (err) {
+      sync.error = err.message;
+      if (err.code === 'auth') { sync.secret = null; secretStore.clear(); } // token revoked: ask to unlock / set up again
+    }
+    sync.busy = false;
+    showSyncStatus();
+    if (sync.again) { sync.again = false; runSync(); }
+  }
+
+  // Batch answers into one upload a few seconds after the last change.
+  function schedulePush() {
+    if (!sync.secret) return;
+    clearTimeout(sync.timer);
+    sync.timer = setTimeout(runSync, 4000);
+  }
+
+  // Leaving the tab: upload now (phones may kill it later). Coming back: fetch what other devices did.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { if (sync.timer) runSync(); }
+    else if (Date.now() - sync.at > 10000) runSync();
+  });
+
+  function ago(t) {
+    const s = (Date.now() - t) / 1000;
+    return s < 60 ? 'just now' : s < 3600 ? Math.floor(s / 60) + ' min ago' : s < 86400 ? Math.floor(s / 3600) + ' h ago' : Math.floor(s / 86400) + ' d ago';
+  }
+
+  function syncLabel() {
+    if (!sync.conf) return 'Set up sync';
+    if (!sync.secret) return '🔒 Unlock sync';
+    if (sync.busy) return 'Syncing…';
+    if (sync.error) return '⚠ Sync error';
+    return sync.at ? '☁ Synced ' + ago(sync.at) : 'Not synced yet';
+  }
+
+  function showSyncStatus() {
+    const el = document.getElementById('sync-status');
+    if (el) el.textContent = syncLabel();
+    if (view === 'sync' && !app.querySelector('form')) renderSync(true); // never wipe what is being typed
+  }
+  setInterval(() => { const el = document.getElementById('sync-status'); if (el) el.textContent = syncLabel(); }, 30000);
+
+  function copyText(text, btn) {
+    const done = () => { btn.textContent = 'Copied ✓'; };
+    const failed = () => { btn.textContent = 'Copy failed: select the text above and copy it'; };
+    if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, failed); else failed();
+  }
+
+  function renderSync(keepScroll) {
+    view = 'sync';
+    const input = (props) => h('input', Object.assign({ class: 'input', autocapitalize: 'off', spellcheck: 'false' }, props));
+    const field = (label, el) => h('label', { class: 'field' }, h('span', {}, label), el);
+    const rememberRow = (sw) => h('label', { class: 'switch-row' },
+      h('span', {}, 'Remember on this device',
+        h('small', {}, 'Leave off on shared or public computers: sync then locks when this tab closes.')),
+      sw);
+    const errLine = h('p', { class: 'msg-err', role: 'alert' }, sync.error && !sync.secret ? sync.error : '');
+    const setBusy = (btn, text) => { btn.disabled = true; btn.textContent = text; errLine.textContent = ''; };
+    const setFail = (btn, text, msg) => { btn.disabled = false; btn.textContent = text; errLine.textContent = msg; };
+    const setupAgain = h('button', { class: 'link-btn', type: 'button', style: 'margin-top:10px', onclick: () => { sync.showSetup = true; renderSync(); } },
+      'Set up again (new token or passphrase)');
+    const submitBtn = (text) => h('button', { class: 'btn', type: 'submit', style: 'width:100%;margin-top:14px' }, text);
+
+    let body;
+    if (!canSync) {
+      body = h('div', { class: 'card small' }, 'Sync needs an up-to-date browser and the site opened over https.');
+    } else if (!sync.conf || sync.showSetup) {
+      const tok = input({ type: 'password', autocomplete: 'off', placeholder: 'ghp_…' });
+      const p1 = input({ type: 'password', autocomplete: 'new-password' });
+      const p2 = input({ type: 'password', autocomplete: 'new-password' });
+      const sw = h('input', { type: 'checkbox', class: 'switch' });
+      const LABEL = 'Encrypt & connect';
+      const btn = submitBtn(LABEL);
+      body = h('form', {
+        class: 'card',
+        onsubmit: async (e) => {
+          e.preventDefault();
+          const token = tok.value.trim();
+          if (!token) return setFail(btn, LABEL, 'Paste the GitHub token first.');
+          if (p1.value.length < 12) return setFail(btn, LABEL, 'Use a passphrase of at least 12 characters.');
+          if (p1.value !== p2.value) return setFail(btn, LABEL, 'The two passphrases do not match.');
+          setBusy(btn, 'Connecting…');
+          try {
+            const c = MCQSync.client(token);
+            const secret = { token, gist: (await c.find()) || (await c.create(localDoc())) };
+            const conf = Object.assign({ created: Date.now() }, await MCQSync.encrypt(secret, p1.value));
+            store.set('mcq.sync.conf', conf);
+            Object.assign(sync, { conf, published: false, secret, error: null, showSetup: false });
+            secretStore.set(secret, sw.checked);
+            renderSync();
+            runSync();
+          } catch (err) {
+            setFail(btn, LABEL, err.code === 'auth' ? 'GitHub did not accept this token. Check that you copied all of it.'
+              : err.code === 'missing' ? 'This token cannot use gists. Create it again with the "gist" box ticked.'
+              : err.message);
+          }
+        },
+      },
+        h('div', { class: 'section-title' }, sync.conf ? 'Set up again' : 'Set up sync'),
+        h('p', { class: 'small', style: 'margin:0' }, 'Progress is kept in a secret gist on your GitHub account. The site stores the token that writes to it only in encrypted form, unlocked by your passphrase.'),
+        h('ol', { class: 'steps small' },
+          h('li', {}, h('a', { href: 'https://github.com/settings/tokens/new?scopes=gist&description=MCQ%20quiz%20sync', target: '_blank', rel: 'noopener' }, 'Create a GitHub token'),
+            ': set Expiration to “No expiration”, keep only “gist” ticked, click Generate token and copy it.'),
+          h('li', {}, 'Paste it below and pick a passphrase of 12+ characters. You will type the passphrase once on each device.')),
+        field('GitHub token', tok), field('Passphrase', p1), field('Repeat passphrase', p2),
+        rememberRow(sw), errLine, btn,
+        sync.conf && h('button', { class: 'link-btn', type: 'button', style: 'margin-top:10px', onclick: () => { sync.showSetup = false; renderSync(); } }, 'Cancel'));
+    } else if (!sync.secret) {
+      const pass = input({ type: 'password', autocomplete: 'current-password' });
+      const sw = h('input', { type: 'checkbox', class: 'switch' });
+      const btn = submitBtn('Unlock');
+      body = h('form', {
+        class: 'card',
+        onsubmit: async (e) => {
+          e.preventDefault();
+          setBusy(btn, 'Unlocking…');
+          try {
+            const secret = await MCQSync.decrypt(sync.conf, pass.value);
+            Object.assign(sync, { secret, error: null });
+            secretStore.set(secret, sw.checked);
+            renderSync();
+            runSync();
+          } catch (err) {
+            setFail(btn, 'Unlock', err.message);
+            pass.select();
+          }
+        },
+      },
+        h('div', { class: 'section-title' }, 'Unlock sync'),
+        h('p', { class: 'small', style: 'margin:0' }, 'Type your passphrase to share progress with your other devices.'),
+        field('Passphrase', pass), rememberRow(sw), errLine, btn, setupAgain);
+    } else {
+      body = h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'Sync'),
+        h('div', { style: 'font-weight:650' }, syncLabel()),
+        sync.error && h('p', { class: 'msg-err' }, sync.error),
+        h('p', { class: 'small muted' },
+          (secretStore.remembered() ? 'Remembered on this device. ' : 'Locks when this tab closes. ') +
+          'Progress syncs when you open the site and a few seconds after each answer.'),
+        h('div', { class: 'btn-row' },
+          h('button', { class: 'btn', disabled: sync.busy, onclick: () => runSync() }, 'Sync now'),
+          h('button', { class: 'btn ghost', onclick: () => { secretStore.clear(); Object.assign(sync, { secret: null, error: null }); renderSync(); } }, 'Lock on this device')),
+        setupAgain);
+    }
+
+    // Until sync.json is on the site, other devices have nothing to unlock.
+    const conf = sync.conf && !sync.published && JSON.stringify(sync.conf, null, 2);
+    show(h('div', {},
+      h('div', { class: 'qhead' },
+        h('button', { class: 'icon-btn', 'aria-label': 'Back to menu', onclick: goHome }, '✕'),
+        h('div', { class: 'qcount' }, 'Sync across devices')),
+      conf && h('div', { class: 'card' },
+        h('div', { class: 'section-title' }, 'Last step: publish sync.json'),
+        h('p', { class: 'small', style: 'margin:0 0 10px' },
+          'Other devices need this text on the site as sync.json in the repository. Allow about two minutes after it is committed. It is safe to publish: without your passphrase it reveals nothing.'),
+        h('textarea', { class: 'input', readonly: true, rows: 8 }, conf),
+        h('button', { class: 'btn secondary', style: 'width:100%;margin-top:10px', onclick: (e) => copyText(conf, e.currentTarget) }, 'Copy')),
+      body
+    ), keepScroll);
+  }
+
+  // ---------- keyboard (desktop) ----------
+  document.addEventListener('keydown', (e) => {
+    if (view !== 'quiz' || e.ctrlKey || e.metaKey || e.altKey) return;
+    const onButton = e.target instanceof HTMLButtonElement;
+    if ((e.key === 'Enter' || e.key === ' ') && onButton) return; // let the focused button handle it
+    const q = current();
+    const done = quiz.answers[q.key] != null;
+    if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); go(1); return; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); return; }
+    if (done || e.key.length !== 1) return;
+    const k = e.key.toUpperCase();
+    const opt = /^[1-9]$/.test(k) ? q.options[+k - 1] : q.options.find((o) => o.label.toUpperCase() === k);
+    if (opt) { e.preventDefault(); choose(opt.label); }
+  });
+
+  const syncReady = loadSyncConf();
+  load();
+})();
+</script>
+</body>
+</html>
