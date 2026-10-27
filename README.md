@@ -7,14 +7,15 @@ A static quiz site that works on phones and desktops. It has no build step and n
 | File | What it is |
 |---|---|
 | `index.html` | The app: layout, styles and logic |
-| `questions.json` | The question bank. Replace this file to change the questions. |
+| `questions.json` | The IT question bank. Replace this file to change the questions. |
+| `banking.json` | The Banking question bank, same format. |
 | `sync.js` | Optional cross-device sync: encryption, merging and the GitHub gist calls |
 | `sync.json` | Created during sync setup: your GitHub token and the gist id, encrypted with your passphrase |
 | `tests/` | Tests for `sync.js` (`node --test`) |
 
 ## Features
 
-- The start screen lets you choose a quiz type: **IT** or **Banking** (Banking is marked "Coming soon" until its questions are added, see below). Each card shows how many of its questions you have completed, and an unfinished quiz can be resumed from there.
+- The start screen lets you choose a quiz type: **IT** (`questions.json`) or **Banking** (`banking.json`). A type with no file set shows "Coming soon", see below. Each card shows how many of its questions you have completed, and an unfinished quiz can be resumed from there.
 - During a quiz, the bar under the question number shows how many you have completed out of the total (for example `4 / 25 completed`).
 - Tap an option to see right or wrong straight away. A wrong pick turns red, the correct option turns green, and the explanation appears below.
 - Filter by topic and difficulty. Choose 10, 25, 50, 100 or all questions, with an optional shuffle.
