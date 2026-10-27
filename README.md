@@ -14,6 +14,8 @@ A static quiz site that works on phones and desktops. It has no build step and n
 
 ## Features
 
+- The start screen lets you choose a quiz type: **IT** or **Banking** (Banking is marked "Coming soon" until its questions are added, see below). Each card shows how many of its questions you have completed, and an unfinished quiz can be resumed from there.
+- During a quiz, the bar under the question number shows how many you have completed out of the total (for example `4 / 25 completed`).
 - Tap an option to see right or wrong straight away. A wrong pick turns red, the correct option turns green, and the explanation appears below.
 - Filter by topic and difficulty. Choose 10, 25, 50, 100 or all questions, with an optional shuffle.
 - **Mistakes** mode practises only the questions you got wrong last time. **Unattempted** mode practises only the ones you have never answered.
@@ -53,7 +55,19 @@ Replace `questions.json` with a new file that uses the **same name** and the sam
 - Questions with a missing or invalid answer are skipped, and the home screen shows how many were skipped.
 - Keep the `id` values stable. Saved progress is linked to the id plus the question text.
 
-**Several banks at once:** upload extra files next to `index.html` (for example `banking.json`) and open `https://your-site/?data=banking.json`.
+**Adding the Banking questions (or another quiz type):**
+
+1. Put the questions file next to `index.html`, for example `banking.json`, in the same format as above.
+2. In `index.html`, find `CATEGORIES` near the top of the script and set the file name on the Banking line:
+   ```js
+   { name: 'Banking', icon: '🏦', file: 'banking.json' },
+   ```
+   To add a new type, add a line of your own with a name, an emoji and a file.
+3. Redeploy. The Banking card stops saying "Coming soon" and opens its own menu, topics and progress.
+
+Progress for every quiz type is saved and synced together. Only one unfinished quiz is kept at a time, so starting a quiz in one type replaces an unfinished quiz in another.
+
+**Open one file directly:** `https://your-site/?data=banking.json` skips the start screen and opens that file's menu.
 
 **Try a file without redeploying:** on the home screen, tap **Open another JSON file** and pick a JSON file from your device. This only lasts until the page is reloaded.
 

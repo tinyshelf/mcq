@@ -89,6 +89,21 @@
   .resume .btn { flex: none; padding: 10px 16px; }
 
   .footer { margin-top: 24px; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; }
+  .back-link { margin-left: -6px; }
+
+  /* quiz types */
+  .cats { display: grid; gap: 12px; margin-top: 16px; }
+  @media (min-width: 560px) { .cats { grid-template-columns: 1fr 1fr; } }
+  .cat {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; text-align: left;
+    background: var(--card); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 18px; cursor: pointer; box-shadow: var(--shadow);
+  }
+  @media (hover: hover) { .cat:not(:disabled):hover { border-color: var(--accent); } }
+  .cat:disabled { cursor: default; opacity: .6; }
+  .cat-icon { font-size: 1.9rem; line-height: 1; margin-bottom: 8px; }
+  .cat-name { font-size: 1.2rem; font-weight: 700; }
+  .cat .tag { margin-top: 6px; }
+  .cat .tbar { display: block; width: 100%; margin: 10px 0 4px; }
 
   /* quiz */
   .qhead { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
@@ -97,8 +112,10 @@
   .score { font-size: .92rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .score .r { color: var(--ok); font-weight: 650; }
   .score .w { color: var(--bad); font-weight: 650; margin-left: 8px; }
-  .progress { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 18px; }
+  .progress-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .progress { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
   .progress > i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .25s; }
+  .pcount { font-size: .82rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
   .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
   .tag { font-size: .74rem; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
@@ -188,8 +205,13 @@
 (() => {
   'use strict';
 
-  // Questions file. Override with ?data=other.json to keep several banks side by side.
-  const DATA_URL = new URLSearchParams(location.search).get('data') || 'questions.json';
+  // Quiz types on the start screen. To add one, put its questions file next to index.html and set `file`.
+  const CATEGORIES = [
+    { name: 'IT', icon: '💻', file: 'questions.json' },
+    { name: 'Banking', icon: '🏦', file: '' }, // coming soon, e.g. 'banking.json'
+  ];
+  // ?data=other.json opens that file directly, without the start screen.
+  const DATA_PARAM = new URLSearchParams(location.search).get('data');
   const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const DIFF_ORDER = ['easy', 'medium', 'hard'];
   const COUNTS = [10, 25, 50, 100, 0]; // 0 = all
@@ -305,12 +327,12 @@
     return hit ? hit.label : null;
   }
 
-  function setBank(raw, source) {
+  function makeBank(raw, source) {
     const { questions, skipped } = normalize(raw);
     if (!questions.length) throw new Error('No valid questions found in ' + source + '. Check the JSON format described in README.md.');
     const rank = (d) => { const r = DIFF_ORDER.indexOf(d.toLowerCase()); return r < 0 ? 99 : r; };
     const meta = Array.isArray(raw) ? {} : raw;
-    bank = {
+    return {
       title: str(meta.title) || 'MCQ Practice',
       subtitle: str(meta.syllabus || meta.description || meta.subtitle),
       source,
@@ -320,37 +342,55 @@
       diffs: [...new Set(questions.map((q) => q.difficulty).filter(Boolean))].sort((a, b) => rank(a) - rank(b)),
       byKey: Object.fromEntries(questions.map((q) => [q.key, q])),
     };
-    document.title = bank.title;
+  }
+
+  function openBank(b) {
+    bank = b;
+    document.title = b.title;
     quiz = loadSavedQuiz();
-    renderHome();
+  }
+
+  async function fetchBank(file) {
+    // no-cache: revalidate so a replaced questions file shows up right away
+    const res = await fetch(file, { cache: 'no-cache' });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' while loading "' + file + '"');
+    return makeBank(await res.json(), file);
   }
 
   async function load() {
-    try {
-      // no-cache: revalidate so a replaced questions.json shows up right away
-      const res = await fetch(DATA_URL, { cache: 'no-cache' });
-      if (!res.ok) throw new Error('HTTP ' + res.status + ' while loading "' + DATA_URL + '"');
-      const raw = await res.json();
-      await syncReady; // so the first screen already shows the right sync state
-      setBank(raw, DATA_URL);
-      runSync();
-    } catch (err) {
-      renderError(err);
+    if (DATA_PARAM) {
+      try {
+        const b = await fetchBank(DATA_PARAM);
+        await syncReady; // so the first screen already shows the right sync state
+        openBank(b);
+        renderHome();
+        runSync();
+      } catch (err) {
+        renderError(err, DATA_PARAM);
+      }
+      return;
     }
+    // A file that fails to load shows its error on its own card; the other quiz types still work.
+    await Promise.all(CATEGORIES.filter((c) => c.file).map((c) =>
+      fetchBank(c.file).then((b) => { c.bank = b; }, (err) => { c.error = err; })));
+    await syncReady;
+    renderPick();
+    runSync();
   }
 
   fileInput.addEventListener('change', () => {
     const file = fileInput.files && fileInput.files[0];
     fileInput.value = '';
     if (!file) return;
-    file.text().then((t) => setBank(JSON.parse(t), file.name)).catch((err) => renderError(err, file.name));
+    file.text().then((t) => { openBank(makeBank(JSON.parse(t), file.name)); enterScreen(HOME); renderHome(); })
+      .catch((err) => renderError(err, file.name));
   });
 
   // ---------- session ----------
-  function loadSavedQuiz() {
+  function loadSavedQuiz(b = bank) {
     const s = store.get('mcq.session', null);
     if (!s || !Array.isArray(s.keys)) return null;
-    const keys = s.keys.filter((k) => bank.byKey[k]);
+    const keys = s.keys.filter((k) => b.byKey[k]);
     if (!keys.length) return null;
     return { keys, answers: s.answers || {}, pos: Math.max(0, Math.min(s.pos || 0, keys.length - 1)), label: s.label || 'Quiz' };
   }
@@ -426,19 +466,26 @@
     renderResults();
   }
 
-  // Phone back button: quiz/results -> home instead of leaving the site.
-  let pushed = false;
-  function enterScreen() { if (!pushed) { history.pushState({ mcq: 1 }, ''); pushed = true; } }
-  function goHome() { if (pushed) history.back(); else renderHome(); }
-  window.addEventListener('popstate', () => { pushed = false; if (bank) renderHome(); });
+  // Phone back button steps back one screen (quiz -> menu -> quiz types) instead of leaving the site.
+  const HOME = DATA_PARAM ? 0 : 1; // history depth of the menu; depth 0 is the quiz-type screen
+  let depth = 0;
+  if (history.state && history.state.mcq) history.replaceState(null, ''); // reloaded part-way: start from the top
+  function enterScreen(level = HOME + 1) { while (depth < level) history.pushState({ mcq: ++depth }, ''); }
+  function goHome() { if (depth > HOME) history.go(HOME - depth); else renderHome(); }
+  function goPick() { if (depth) history.go(-depth); else renderPick(); }
+  window.addEventListener('popstate', (e) => {
+    depth = (e.state && e.state.mcq) || 0;
+    if (depth < HOME) renderPick(); else if (bank) renderHome();
+  });
 
   // ---------- views ----------
   function renderError(err, source) {
     view = 'error';
     const isFile = location.protocol === 'file:';
     show(h('div', {},
+      !DATA_PARAM && h('button', { class: 'link-btn back-link', onclick: goPick }, '‹ Quiz types'),
       h('h1', {}, 'Could not load questions'),
-      h('p', { class: 'sub' }, 'Tried: ' + (source || DATA_URL)),
+      h('p', { class: 'sub' }, 'Tried: ' + source),
       h('pre', { class: 'err' }, String(err && err.message ? err.message : err)),
       h('div', { class: 'card small' },
         isFile
@@ -448,6 +495,47 @@
         h('button', { class: 'btn', onclick: () => fileInput.click() }, 'Choose JSON file'),
         !isFile && h('button', { class: 'btn ghost', onclick: () => location.reload() }, 'Retry'))
     ));
+  }
+
+  function renderPick(keepScroll) {
+    view = 'pick';
+    document.title = 'MCQ Practice';
+    // An unfinished quiz can be resumed straight from here.
+    const saved = store.get('mcq.session', null);
+    const rc = saved && Array.isArray(saved.keys) && CATEGORIES.find((c) => c.bank && saved.keys.some((k) => c.bank.byKey[k]));
+    const rq = rc && loadSavedQuiz(rc.bank);
+    const open = (c, toQuiz) => {
+      if (!c.bank) { enterScreen(HOME); renderError(c.error, c.file); return; }
+      openBank(c.bank);
+      enterScreen(toQuiz ? HOME + 1 : HOME);
+      if (toQuiz) renderQuiz(); else renderHome();
+    };
+
+    show(h('div', {},
+      h('h1', {}, 'MCQ Practice'),
+      h('p', { class: 'sub' }, 'Choose a quiz type'),
+
+      rq && h('div', { class: 'card resume' },
+        h('div', {},
+          h('div', { style: 'font-weight:650' }, 'Continue: ' + rc.name + ' · ' + rq.label),
+          h('div', { class: 'small muted' }, rq.keys.filter((k) => rq.answers[k] != null).length + ' of ' + rq.keys.length + ' answered')),
+        h('button', { class: 'btn', onclick: () => open(rc, true) }, 'Resume')),
+
+      h('div', { class: 'cats' }, CATEGORIES.map((c) => {
+        const b = c.bank;
+        const done = b ? b.questions.filter((q) => stats[q.key]).length : 0;
+        return h('button', { class: 'cat', disabled: !c.file, onclick: () => open(c) },
+          h('span', { class: 'cat-icon', 'aria-hidden': 'true' }, c.icon),
+          h('span', { class: 'cat-name' }, c.name),
+          !c.file ? h('span', { class: 'tag plain' }, 'Coming soon')
+            : !b ? h('span', { class: 'small', style: 'color:var(--bad)' }, 'Could not load · tap for details')
+            : [
+              h('span', { class: 'small muted' }, b.questions.length + ' questions · ' + b.topics.length + ' topic' + (b.topics.length > 1 ? 's' : '')),
+              h('span', { class: 'tbar' }, h('i', { style: 'width:' + pct(done, b.questions.length) + '%;background:var(--accent)' })),
+              h('span', { class: 'small muted' }, done + ' / ' + b.questions.length + ' completed'),
+            ]);
+      }))
+    ), keepScroll);
   }
 
   function renderHome(keepScroll) {
@@ -482,6 +570,7 @@
     })();
 
     show(h('div', {},
+      !DATA_PARAM && h('button', { class: 'link-btn back-link', onclick: goPick }, '‹ Quiz types'),
       h('h1', {}, bank.title),
       h('p', { class: 'sub' },
         bank.subtitle ? bank.subtitle + ' · ' : '',
@@ -583,7 +672,9 @@
         h('button', { class: 'icon-btn', 'aria-label': 'Back to menu', title: 'Back to menu (progress is saved)', onclick: goHome }, '✕'),
         h('div', { class: 'qcount' }, 'Question ' + (quiz.pos + 1) + ' of ' + n),
         h('div', { class: 'score' }, h('span', { class: 'r' }, '✓ ' + t.r), h('span', { class: 'w' }, '✗ ' + t.w))),
-      h('div', { class: 'progress' }, h('i', { style: 'width:' + pct(t.done, n) + '%' })),
+      h('div', { class: 'progress-row' },
+        h('div', { class: 'progress' }, h('i', { style: 'width:' + pct(t.done, n) + '%' })),
+        h('span', { class: 'pcount' }, t.done + ' / ' + n + ' completed')),
 
       h('div', { class: 'meta' },
         h('span', { class: 'tag' }, q.topic),
@@ -748,8 +839,9 @@
       store.set('mcq.sessionT', d.sessionT);
       if (bank) quiz = loadSavedQuiz();
     }
-    if (!changed || !bank) return;
-    if (view === 'home') renderHome(true);
+    if (!changed) return;
+    if (view === 'pick') renderPick(true);
+    else if (view === 'home') renderHome(true);
     else if (sessionChanged && (view === 'quiz' || view === 'results')) renderHome(); // continued or finished on another device
   }
 
